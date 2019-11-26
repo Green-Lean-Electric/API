@@ -16,7 +16,7 @@ exports.createServer = function (staticFiles, routes, port, staticFilesDirectori
         if (req.method === 'GET' || req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
             console.log('Request Type:' + req.method + ' Endpoint: ' + reqUrl.pathname);
 
-            const route = routes[reqUrl.pathname];
+            const route = findRoute(routes, reqUrl.pathname);
             if (route) {
                 computeReply(route, req)
                     .then(reply => writeReply(reply, res))
@@ -90,4 +90,14 @@ function addStaticFilesFromDirectory(directory, staticFiles, staticFilesDirector
             });
         });
     });
+}
+
+function findRoute(routes, path) {
+    for (const route in routes) {
+        if (path.startsWith(route)) {
+            return routes[route];
+        }
+    }
+
+    return undefined;
 }
