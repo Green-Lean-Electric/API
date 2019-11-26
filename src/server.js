@@ -21,14 +21,16 @@ exports.createServer = function (staticFiles, routes, port, staticFilesDirectori
                 computeReply(route, req)
                     .then(reply => writeReply(reply, res))
                     .catch(error => console.error(error));
+                return;
             }
 
             const staticFile = staticFiles[reqUrl.pathname];
             if (staticFile) {
                 serveStaticFile(staticFile, res);
-            } else {
-                manageError(res);
+                return;
             }
+
+            manageError(res);
         }
     });
 
