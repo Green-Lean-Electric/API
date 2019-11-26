@@ -1,7 +1,8 @@
 const http = require('http');
 const url = require('url');
+const fs = require('fs');
 
-exports.createServer = function(routes, port) {
+exports.createServer = function (filesDirectory, staticFiles, routes, port) {
     const server = http.createServer(function (req, res) {
         const reqUrl = url.parse(req.url);
 
@@ -13,6 +14,11 @@ exports.createServer = function(routes, port) {
                 computeReply(route, req)
                     .then(reply => writeReply(reply, res))
                     .catch(error => console.error(error));
+            }
+
+            const staticFile = staticFiles[reqUrl.pathname];
+            if (staticFile) {
+                serveStaticFile(filesDirectory + staticFile, res);
             } else {
                 // TODO: add an error message
             }
@@ -45,3 +51,14 @@ exports.getParam = function (request, paramName) {
     }
     return null;
 };
+
+function serveStaticFile(path, res) {
+    fs.readFile(path, (error, data) => {
+        if (error) {
+            // TODO: add error
+        } else {
+            res.writeHead(200);
+            res.end(data);
+        }
+    });
+}
