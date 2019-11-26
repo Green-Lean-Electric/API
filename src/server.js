@@ -48,7 +48,7 @@ function writeReply(response, res) {
     res.end(JSON.stringify(response));
 }
 
-exports.getParam = function (request, paramName) {
+exports.getParam = function (request, paramName) { console.log(url.parse(request.url));
     var query = url.parse(request.url).query;
     if (!query) return null;
 
