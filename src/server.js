@@ -1,8 +1,15 @@
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
+const path = require('path');
 
-exports.createServer = function (staticFiles, routes, port) {
+exports.createServer = function (staticFiles, routes, port, staticFilesDirectories) {
+    if (staticFilesDirectories) {
+        for (const staticFilesDirectory of staticFilesDirectories) {
+            addStaticFilesFromDirectory(staticFilesDirectory, staticFiles, staticFilesDirectory);
+        }
+    }
+
     const server = http.createServer(function (req, res) {
         const reqUrl = url.parse(req.url);
 
@@ -20,7 +27,7 @@ exports.createServer = function (staticFiles, routes, port) {
             if (staticFile) {
                 serveStaticFile(staticFile, res);
             } else {
-                // TODO: add an error message
+                manageError(res);
             }
         }
     });
@@ -55,11 +62,32 @@ exports.getParam = function (request, paramName) {
 function serveStaticFile(path, res) {
     fs.readFile(path, (error, data) => {
         if (error) {
-            res.writeHead(404);
-            res.end();
+            manageError(res);
         } else {
             res.writeHead(200);
             res.end(data);
         }
+    });
+}
+
+function manageError(res) {
+    res.writeHead(404);
+    res.end();
+}
+
+function addStaticFilesFromDirectory(directory, staticFiles, staticFilesDirectory) {
+    fs.readdir(directory, (err, files) => {
+        files.forEach(file => {
+
+            const fullPath = path.join(directory, file);
+
+            fs.stat(fullPath, (_, stat) => {
+                if (stat.isFile()) {
+                    staticFiles[path.join('/', path.relative(staticFilesDirectory, fullPath)).replace(/\\/g, "/")] = fullPath;
+                } else if (stat.isDirectory()) {
+                    addStaticFilesFromDirectory(fullPath, staticFiles, staticFilesDirectory);
+                }
+            });
+        });
     });
 }
