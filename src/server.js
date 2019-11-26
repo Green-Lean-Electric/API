@@ -2,7 +2,7 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 
-exports.createServer = function (filesDirectory, staticFiles, routes, port) {
+exports.createServer = function (staticFiles, routes, port) {
     const server = http.createServer(function (req, res) {
         const reqUrl = url.parse(req.url);
 
@@ -18,7 +18,7 @@ exports.createServer = function (filesDirectory, staticFiles, routes, port) {
 
             const staticFile = staticFiles[reqUrl.pathname];
             if (staticFile) {
-                serveStaticFile(filesDirectory + staticFile, res);
+                serveStaticFile(staticFile, res);
             } else {
                 // TODO: add an error message
             }
@@ -55,7 +55,8 @@ exports.getParam = function (request, paramName) {
 function serveStaticFile(path, res) {
     fs.readFile(path, (error, data) => {
         if (error) {
-            // TODO: add error
+            res.writeHead(404);
+            res.end();
         } else {
             res.writeHead(200);
             res.end(data);
