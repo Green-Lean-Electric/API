@@ -1,5 +1,5 @@
 {
-  "name": "simulator",
+  "name": "utils",
   "version": "0.1.0",
   "dependencies": {
     "mongodb": "^3.3.4"
