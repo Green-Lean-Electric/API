@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 exports.serversConfiguration = {
     simulator: {
         hostname: 'localhost',
@@ -12,3 +14,8 @@ exports.serversConfiguration = {
         port: '8082'
     },
 };
+
+exports.uploadDirectory = __dirname + '\\upload\\';
+if (!fs.existsSync(exports.uploadDirectory)) {
+    fs.mkdir(exports.uploadDirectory, () => {});
+}

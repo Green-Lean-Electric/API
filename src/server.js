@@ -2,6 +2,8 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
+const formidable = require('formidable');
+const configuration = require('./configuration');
 
 exports.createServer = function (staticFiles, routes, port, staticFilesDirectories) {
     if (staticFilesDirectories) {
@@ -132,3 +134,24 @@ function findRoute(routes, path) {
 
     return undefined;
 }
+
+exports.handleFile = function(request) {
+    let incomingForm = formidable.IncomingForm();
+    incomingForm.uploadDir = configuration.uploadDirectory;
+    incomingForm.keepExtensions = true;
+
+    return new Promise((resolve, reject) => {
+        incomingForm.parse(request, (error, fields, files) => {
+            if (error) {
+                reject(error);
+            }
+
+            const file = files.file;
+            const currentPath = file.path;
+            const newPath = configuration.uploadDirectory+ files.file.name;
+            fs.rename(currentPath, newPath, () => {
+                resolve(newPath)
+            });
+        });
+    });
+};
