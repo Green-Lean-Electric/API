@@ -79,7 +79,6 @@ const contentTypes = {
 };
 
 function findExtension(path) {
-    console.log(path);
     const pathComponents = path.split('\\');
     const fileName = pathComponents[pathComponents.length - 1];
     const fileNameComponents = fileName.split('.');
@@ -89,7 +88,7 @@ function findExtension(path) {
 }
 
 function serveStaticFile(path, res) {
-    const contentType = contentTypes[findExtension(path)];
+    const contentType = contentTypes[findExtension(path)] || contentTypes.undefined;
 
     fs.readFile(path, (error, data) => {
         if (error) {
