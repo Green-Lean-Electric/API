@@ -18,7 +18,7 @@ exports.createServer = function (staticFiles, routes, port, staticFilesDirectori
 
             const route = findRoute(routes, reqUrl.pathname);
             if (route) {
-                computeReply(route, req)
+                computeReply(route, req, res)
                     .then(reply => writeReply(reply, res))
                     .catch(error => console.error(error));
                 return;
@@ -37,8 +37,8 @@ exports.createServer = function (staticFiles, routes, port, staticFilesDirectori
     server.listen(port);
 };
 
-function computeReply(route, request) {
-    const reply = route(request);
+function computeReply(route, request, response) {
+    const reply = route(request, response);
     return new Promise(resolve => resolve(reply));
 }
 
