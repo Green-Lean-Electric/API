@@ -48,7 +48,8 @@ function writeReply(response, res) {
     res.end(JSON.stringify(response));
 }
 
-exports.getParam = function (request, paramName) { console.log(url.parse(request.url));
+exports.getParam = function (request, paramName) {
+    console.log(url.parse(request.url));
     var query = url.parse(request.url).query;
     if (!query) return null;
 
@@ -61,11 +62,40 @@ exports.getParam = function (request, paramName) { console.log(url.parse(request
     return null;
 };
 
+const contentTypes = {
+    // Pages components
+    css: 'text/css',
+    html: 'text/html',
+    js: 'text/javascript',
+
+    // Images
+    ico: 'image/vnd.microsoft.icon',
+    jpeg: 'image/jpeg',
+    jpg: 'image/jpeg',
+    png: 'image/png',
+
+    // Others:
+    undefined: 'application/octet-stream'
+};
+
+function findExtension(path) {
+    console.log(path);
+    const pathComponents = path.split('\\');
+    const fileName = pathComponents[pathComponents.length - 1];
+    const fileNameComponents = fileName.split('.');
+    return fileNameComponents.length > 1
+        ? fileNameComponents[fileNameComponents.length - 1]
+        : 'undefined';
+}
+
 function serveStaticFile(path, res) {
+    const contentType = contentTypes[findExtension(path)];
+
     fs.readFile(path, (error, data) => {
         if (error) {
             manageError(res);
         } else {
+            res.setHeader('Content-type', contentType);
             res.writeHead(200);
             res.end(data);
         }
