@@ -28,7 +28,7 @@ exports.createServer = function (staticFiles, routes, port, staticFilesDirectori
 
             const staticFile = staticFiles[reqUrl.pathname];
             if (staticFile) {
-                serveStaticFile(staticFile, res);
+                exports.serveStaticFile(staticFile, res);
                 return;
             }
 
@@ -40,29 +40,50 @@ exports.createServer = function (staticFiles, routes, port, staticFilesDirectori
 };
 
 function computeReply(route, request, response) {
-    const reply = route(request, response);
-    return new Promise(resolve => resolve(reply));
+    return exports.getParam(request).then(parameters => route(request, parameters, response));
 }
 
 function writeReply(response, res) {
+    if (!response) return;
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(response));
 }
 
-exports.getParam = function (request, paramName) {
-    console.log(url.parse(request.url));
-    var query = url.parse(request.url).query;
-    if (!query) return null;
-
-    var params = query.split('&');
-    for (var i = 0; i < params.length; i++) {
-        var data = params[i].split('=');
-        if (data[0] === paramName)
-            return data[1];
+exports.getParam = function (request) {
+    if (request.method.toLowerCase() === 'get') {
+        return getParamsForGet(request);
+    } else {
+        return handlePostParameters(request);
     }
-    return null;
 };
+
+function getParamsForPost(request) {
+    let data = [];
+    request.on('data', chunk => {
+        data.push(chunk);
+    });
+
+    return new Promise(resolve => {
+        request.on('end', () => {
+            resolve(data);
+        });
+    });
+}
+
+function getParamsForGet(request) {
+    const query = url.parse(request.url).query;
+    if (!query) return new Promise(resolve => resolve({}));
+    const params = query.split('&');
+
+    const data = {};
+    for (let i = 0; i < params.length; i++) {
+        const fields = params[i].split('=');
+        data[fields[0]] = fields[1];
+    }
+
+    return new Promise(resolve => resolve(data));
+}
 
 const contentTypes = {
     // Pages components
@@ -89,19 +110,28 @@ function findExtension(path) {
         : 'undefined';
 }
 
-function serveStaticFile(path, res) {
+exports.serveStaticFile = function (path, res) {
     const contentType = contentTypes[findExtension(path)] || contentTypes.undefined;
-
-    fs.readFile(path, (error, data) => {
-        if (error) {
-            manageError(res);
-        } else {
+    exports.readFile(path)
+        .then(data => {
             res.setHeader('Content-type', contentType);
             res.writeHead(200);
             res.end(data);
-        }
-    });
-}
+        })
+        .catch(() => manageError(res));
+};
+
+exports.readFile = function (path) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, (error, data) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(data);
+            }
+        });
+    })
+};
 
 function manageError(res) {
     res.writeHead(404);
@@ -135,23 +165,38 @@ function findRoute(routes, path) {
     return undefined;
 }
 
-exports.handleFile = function(request) {
+/**
+ * Handle a file upload and/or POST parameters.
+ * Return a Promise that contains the request parameters and the path of the file if there is a file.
+ * <br/>
+ * Can be used with destructuring as follows:
+ * handlePostParameters(request).then([fields, path]) => {...});
+ *
+ * @param request
+ * @returns {Promise<[Object, Array || String]>}
+ */
+function handlePostParameters(request) {
     let incomingForm = formidable.IncomingForm();
     incomingForm.uploadDir = configuration.uploadDirectory;
     incomingForm.keepExtensions = true;
 
     return new Promise((resolve, reject) => {
-        incomingForm.parse(request, (error, fields, files) => {
+        incomingForm.parse(request, (error, parameters, files) => {
             if (error) {
                 reject(error);
             }
 
             const file = files.file;
-            const currentPath = file.path;
-            const newPath = configuration.uploadDirectory+ files.file.name;
-            fs.rename(currentPath, newPath, () => {
-                resolve(newPath)
-            });
+
+            if (file) {
+                const currentPath = file.path;
+                const newPath = configuration.uploadDirectory + files.file.name;
+                fs.rename(currentPath, newPath, () => {
+                    resolve([parameters, newPath])
+                });
+            } else {
+                resolve(parameters);
+            }
         });
     });
-};
+}
