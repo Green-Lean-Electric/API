@@ -44,7 +44,7 @@ function computeReply(route, request, response) {
 }
 
 function writeReply(response, res) {
-    if (!response) return;
+    if (response === undefined || response === null) return;
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(response));
