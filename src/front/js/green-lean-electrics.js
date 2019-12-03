@@ -145,3 +145,15 @@ function getDomain() {
     }
     return host;
 }
+
+function createMessageModal(title, message,id) {
+    return Templates.Modals.createModal(
+        title,
+        message,
+        id,
+        [
+            ['Ok', () => {}]
+        ],
+        () => {}
+    );
+}
