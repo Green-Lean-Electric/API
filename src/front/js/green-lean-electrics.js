@@ -133,3 +133,15 @@ function blockView() {
 function unblockView() {
     $('#block').hide();
 }
+
+
+/** Utils **/
+function getDomain() {
+    const host = location.host;
+    const port = location.port;
+
+    if (host.endsWith(port)) {
+        return host.substr(0, host.length - port.length - 1);
+    }
+    return host;
+}
