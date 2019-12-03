@@ -201,14 +201,14 @@ function handlePostParameters(request) {
     });
 }
 
-exports.sendEmail = function(){
+exports.sendEmail = function(from,to,subject,html){
     const sendmail = require('sendmail')();
 
     sendmail({
-        from: 'no-reply@yourdomain.com',
-        to: 'borghinoemilie@laposte.net',
-        subject: 'test sendmail',
-        html: 'Mail of test sendmail ',
+        from: from,
+        to: to,
+        subject: subject,
+        html: html,
       }, function(err, reply) {
         console.log(err && err.stack);
         console.dir(reply);
