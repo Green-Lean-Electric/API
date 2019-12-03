@@ -1,21 +1,26 @@
 const fs = require('fs');
 
+const hostname = process.platform === 'win32'
+    ? 'localhost'
+    : '145.239.75.80';
+
 exports.serversConfiguration = {
     simulator: {
-        hostname: 'localhost',
+        hostname: hostname,
         port: '8080'
     },
     prosumer: {
-        hostname: 'localhost',
+        hostname: hostname,
         port: '8081'
     },
     manager: {
-        hostname: 'localhost',
+        hostname: hostname,
         port: '8082'
     },
 };
 
 exports.uploadDirectory = __dirname + '\\upload\\';
 if (!fs.existsSync(exports.uploadDirectory)) {
-    fs.mkdir(exports.uploadDirectory, () => {});
+    fs.mkdir(exports.uploadDirectory, () => {
+    });
 }
