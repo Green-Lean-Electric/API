@@ -1,47 +1,42 @@
 const DEFAULT_URL = 'mongodb://localhost';
 
+let client;
+function getClient() {
+    if (!client) {
+        return connect().then(newClient => {
+            client = newClient;
+            return client;
+        });
+    }
+    return new Promise(resolve => resolve(client));
+}
+
 function connect(url) {
     const mongoClient = require('mongodb').MongoClient;
-    const fullUrl = (url
+    const fullUrl = (
+        url
             ? url
             : DEFAULT_URL
     );
-
     return mongoClient.connect(fullUrl).catch(error => console.log(error));
 }
 
-function operate(url, databaseName, collectionName, operation) {
-    return connect(url)
-        .then(client => {
-                return {
-                    client: client,
-                    database: client.db(databaseName)
-                };
-            }
-        ).then(({client: client, database: database}) => {
-                return {
-                    client: client,
-                    result: operation(database.collection(collectionName))
-                };
-            }
-        ).then(({client: client, result: result}) => {
-            client.close();
-            return result;
-        });
+function operate(databaseName, collectionName, operation) {
+    return getClient().then(client => operation(client.db(databaseName).collection(collectionName)));
 }
 
-exports.insertOne = function (url, databaseName, collectionName, object) {
-    return operate(url, databaseName, collectionName, collection => collection.insertOne(object)).then(result => result.ops);
+exports.insertOne = function (databaseName, collectionName, object) {
+    return operate(databaseName, collectionName, collection => collection.insertOne(object)).then(result => result.ops);
 };
 
-exports.find = function (url, databaseName, collectionName, predicate) {
-    return operate(url, databaseName, collectionName, collection => collection.find(predicate).toArray());
+exports.find = function (databaseName, collectionName, predicate) {
+    return operate(databaseName, collectionName, collection => collection.find(predicate).toArray());
 };
 
-exports.count = function (url, databaseName, collectionName) {
-    return operate(url, databaseName, collectionName, collection => collection.count());
+exports.count = function (databaseName, collectionName) {
+    return operate(databaseName, collectionName, collection => collection.count());
 };
 
-exports.updateOne = function (url, databaseName, collectionName, object, updateOperations) {
-    return operate(url, databaseName, collectionName, collection => collection.updateOne(object, updateOperations).then(result => result.result.nModified));
+exports.updateOne = function (databaseName, collectionName, object, updateOperations) {
+    return operate(databaseName, collectionName, collection => collection.updateOne(object, updateOperations).then(result => result.result.nModified));
 };
