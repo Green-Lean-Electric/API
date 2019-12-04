@@ -1,6 +1,14 @@
 const fs = require('fs');
 
-const hostname = process.platform === 'win32'
+exports.availableEnvironments = {
+    dev: 'dev',
+    prod: 'prod'
+};
+exports.environment = process.platform === 'win32'
+    ? exports.availableEnvironments.dev
+    : exports.availableEnvironments.prod;
+
+const hostname = exports.environment === exports.availableEnvironments.dev
     ? 'localhost'
     : '145.239.75.80';
 
@@ -19,7 +27,7 @@ exports.serversConfiguration = {
     },
 };
 
-exports.uploadDirectory = __dirname + '\\upload\\';
+exports.uploadDirectory = __dirname + '/upload/';
 if (!fs.existsSync(exports.uploadDirectory)) {
     fs.mkdir(exports.uploadDirectory, () => {
     });

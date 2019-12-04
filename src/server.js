@@ -15,25 +15,24 @@ exports.createServer = function (staticFiles, routes, port, staticFilesDirectori
     const server = http.createServer(function (req, res) {
         const reqUrl = url.parse(req.url);
 
-        if (req.method === 'GET' || req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
-            console.log('Request Type:' + req.method + ' Endpoint: ' + reqUrl.pathname);
 
-            const route = findRoute(routes, reqUrl.pathname);
-            if (route) {
-                computeReply(route, req, res)
-                    .then(reply => writeReply(reply, res))
-                    .catch(error => console.error(error));
-                return;
-            }
+        console.log('Request Type:' + req.method + ' Endpoint: ' + reqUrl.pathname);
 
-            const staticFile = staticFiles[reqUrl.pathname];
-            if (staticFile) {
-                exports.serveStaticFile(staticFile, res);
-                return;
-            }
-
-            manageError(res);
+        const route = findRoute(routes, reqUrl.pathname);
+        if (route) {
+            computeReply(route, req, res)
+                .then(reply => writeReply(reply, res))
+                .catch(error => console.error(error));
+            return;
         }
+
+        const staticFile = staticFiles[reqUrl.pathname];
+        if (staticFile) {
+            exports.serveStaticFile(staticFile, res);
+            return;
+        }
+
+        manageError(res);
     });
 
     server.listen(port);
@@ -101,17 +100,21 @@ const contentTypes = {
     undefined: 'application/octet-stream'
 };
 
-function findExtension(path) {
+exports.findExtension = function (path) {
     const pathComponents = path.split('\\');
     const fileName = pathComponents[pathComponents.length - 1];
     const fileNameComponents = fileName.split('.');
     return fileNameComponents.length > 1
         ? fileNameComponents[fileNameComponents.length - 1]
         : 'undefined';
-}
+};
 
 exports.serveStaticFile = function (path, res) {
-    const contentType = contentTypes[findExtension(path)] || contentTypes.undefined;
+    if (!path) {
+        manageError(res);
+        return;
+    }
+    const contentType = contentTypes[exports.findExtension(path)] || contentTypes.undefined;
     exports.readFile(path)
         .then(data => {
             res.setHeader('Content-type', contentType);
@@ -191,9 +194,7 @@ function handlePostParameters(request) {
             if (file) {
                 const currentPath = file.path;
                 const newPath = configuration.uploadDirectory + files.file.name;
-                fs.rename(currentPath, newPath, () => {
-                    resolve([parameters, newPath])
-                });
+                exports.moveFile(currentPath, newPath).then(newPath => resolve([parameters, newPath]));
             } else {
                 resolve(parameters);
             }
@@ -201,7 +202,12 @@ function handlePostParameters(request) {
     });
 }
 
-exports.sendEmail = function(from,to,subject,html){
+exports.moveFile = function (oldPath, newPath) {
+    return new Promise(resolve => fs.rename(oldPath, newPath, () => resolve(newPath)));
+};
+
+exports.sendEmail = function (from, to, subject, html) {
+    if (configuration.environment === configuration.availableEnvironments.dev) return;
     const sendmail = require('sendmail')();
 
     sendmail({
@@ -209,7 +215,7 @@ exports.sendEmail = function(from,to,subject,html){
         to: to,
         subject: subject,
         html: html,
-      }, function(err, reply) {
+    }, function (err, reply) {
         console.log(err && err.stack);
         console.dir(reply);
     });

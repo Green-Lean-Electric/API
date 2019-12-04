@@ -6,16 +6,16 @@ Templates.Modals = {};
 
 Templates.Modals.template =
     '<div class="modal fade show" role="dialog" id="{id}">' +
-        '<div class="modal-dialog">' +
-            '<div class="modal-content">' +
-                '<div class="modal-header">' +
-                    '<h4>{title}</h4>' +
-                    '<button type="button" data-dismiss="modal" class="close">×</button>' +
-                '</div>' +
-                '<div class="modal-body"></div>' +
-                '<div class="modal-footer"></div>' +
-            '</div>' +
-        '</div>' +
+    '<div class="modal-dialog">' +
+    '<div class="modal-content">' +
+    '<div class="modal-header">' +
+    '<h4>{title}</h4>' +
+    '<button type="button" data-dismiss="modal" class="close">×</button>' +
+    '</div>' +
+    '<div class="modal-body"></div>' +
+    '<div class="modal-footer"></div>' +
+    '</div>' +
+    '</div>' +
     '</div>';
 
 Templates.Modals.actionTemplate = '<button type="button" data-dismiss="modal" class="btn {classes}">{text}</button>';
@@ -25,7 +25,7 @@ Templates.Modals.buttonClasses = {
     seconday: 'btn-seconday'
 };
 
-Templates.Modals.createModal = function(title, elements, id, actions, dismissAction, actionWhenHidden) {
+Templates.Modals.createModal = function (title, elements, id, actions, dismissAction, actionWhenHidden) {
     const content = Templates.Modals.normalizeContent(elements);
     let modalContainer = $(Templates.Modals.template.format({title, id}).toHtmlElement());
     let body = modalContainer.find('.modal-body');
@@ -34,7 +34,10 @@ Templates.Modals.createModal = function(title, elements, id, actions, dismissAct
     if (actions) {
         for (const action of actions) {
             const classes = action[2] || Templates.Modals.buttonClasses.primary;
-            let htmlAction = $(Templates.Modals.actionTemplate.format({text: action[0], classes}).toHtmlElement()).click(action[1]);
+            let htmlAction = $(Templates.Modals.actionTemplate.format({
+                text: action[0],
+                classes
+            }).toHtmlElement()).click(action[1]);
             footer.append(htmlAction);
         }
     }
@@ -43,16 +46,17 @@ Templates.Modals.createModal = function(title, elements, id, actions, dismissAct
         modalContainer.find('.modal-header').find('button').click(dismissAction);
     }
 
-    modalContainer.on('hidden.bs.modal', actionWhenHidden || Templates.Modals.actionsWhenHidden.remove);
+    modalContainer.on('hidden.bs.modal', actionWhenHidden || Templates.Modals.actionsWhenHidden.hide);
     return modalContainer;
 };
 
-Templates.Modals.createModalWithSelectList = function(title, elements, id, options, actions, actionWhenHidden) {
+Templates.Modals.createModalWithSelectList = function (title, elements, id, options, actions, actionWhenHidden) {
     let {selectBlock, selectList} = Templates.createSelectList(id, options);
 
     function getElementsWithList(elements, selectBlock) {
         return Templates.Modals.normalizeContent([elements, selectBlock]);
     }
+
     function getActionsLinkedToList(actions, selectList) {
         return actions
             ? actions.map(action => [action[0], () => action[1](selectList.val())])
@@ -62,7 +66,7 @@ Templates.Modals.createModalWithSelectList = function(title, elements, id, optio
     return Templates.Modals.createModal(title, getElementsWithList(elements, selectBlock), id, getActionsLinkedToList(actions, selectList), actionWhenHidden);
 };
 
-Templates.Modals.displayModal = function(modal) {
+Templates.Modals.displayModal = function (modal) {
     modal.modal('show');
 };
 
@@ -74,9 +78,9 @@ Templates.Modals.displayModal = function(modal) {
  * @param elements `string`, `array` or jQuery object
  * @returns {*|jQuery.fn.init|jQuery|HTMLElement} A `div` containing the elements
  */
-Templates.Modals.normalizeContent = function(elements) {
+Templates.Modals.normalizeContent = function (elements) {
     const container = $(document.createElement("div"));
-    if (typeof(elements) === 'string') container.append(elements);
+    if (typeof (elements) === 'string') container.append(elements);
     else if (Array.isArray(elements)) elements.forEach(element => container.append(Templates.Modals.normalizeContent(element)));
     else container.append(elements);
     return container;
@@ -86,11 +90,13 @@ Templates.Modals.actionsWhenHidden = {
     remove: function () {
         $(this).remove();
     },
+    hide: function () {
+        $(this).hide();
+    },
     reshow: function () {
         $(this).modal('show');
     }
 };
-
 
 
 String.prototype.format = String.prototype.format ||
@@ -121,17 +127,25 @@ String.prototype.toHtmlElement = String.prototype.toHtmlElement ||
     };
 
 /** User feedback **/
+let blocks = 0;
+
 function blockView() {
     let block = $('#block');
     if (block.length === 0) {
         $('body').append('<div id="block"><img src="img/loading.png" alt="loader"></div>');
         block = $('#block');
     }
-    block.show();
+    if (blocks === 0) {
+        block.show();
+    }
+    blocks++;
 }
 
 function unblockView() {
-    $('#block').hide();
+    blocks--;
+    if (blocks === 0) {
+        $('#block').hide();
+    }
 }
 
 
@@ -146,14 +160,16 @@ function getDomain() {
     return host;
 }
 
-function createMessageModal(title, message,id) {
+function createMessageModal(title, message, id) {
     return Templates.Modals.createModal(
         title,
         message,
         id,
         [
-            ['Ok', () => {}]
+            ['Ok', () => {
+            }]
         ],
-        () => {}
+        () => {
+        }
     );
 }
