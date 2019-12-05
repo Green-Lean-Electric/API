@@ -241,7 +241,7 @@ function sendRegisterForm(userType) {
     var email = document.registerform.email.value;
     var pwd = document.registerform.password.value;
     var repeatpwd = document.registerform.repeatpassword.value;
-alert("ok");
+
     if(checkPassword(pwd) && pwd === repeatpwd){
         blockView();
 
