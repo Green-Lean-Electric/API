@@ -186,7 +186,7 @@ function sendLoginForm(userType) {
         password: pw
     };
 
-    if(userType === "prosumer"){
+    if(userType === "prosumer") {
         // call API
         $.ajax({
             method: 'POST',
@@ -196,21 +196,22 @@ function sendLoginForm(userType) {
             data: JSON.stringify(data),
             success: function (response) {
                 unblockView();
-    console.log(response);
-                    //var object = JSON.parse(response);
-                    if(response.hasOwnProperty("error")){
-                        Templates.Modals.displayModal(createMessageModal("Error",response.error, "loginErrorModal"));
-                        return false;
-                    } else if (response.token) {
-                        window.localStorage.setItem('token', response.token);
-                        window.location = "home.html";
-                    } else {
-                        Templates.Modals.displayModal(createMessageModal("Error","Login was unsuccessful, please check your email and password", "loginFailModal"));
-                        return false;
-                    }
+                console.log(response);
+                //var object = JSON.parse(response);
+                if (response.hasOwnProperty("error")) {
+                    Templates.Modals.displayModal(createMessageModal("Error", response.error, "loginErrorModal"));
+                    return false;
+                } else if (response.token) {
+                    window.localStorage.setItem('token', response.token);
+                    window.location = "home.html";
+                } else {
+                    Templates.Modals.displayModal(createMessageModal("Error", "Login was unsuccessful, please check your email and password", "loginFailModal"));
+                    return false;
+                }
             }
-        });
-    else
+        })
+    }
+    else {
         $.ajax({ //TODO
             method: 'POST',
             url: '/managerLogin',
@@ -219,20 +220,21 @@ function sendLoginForm(userType) {
             data: JSON.stringify(data),
             success: function (response) {
                 unblockView();
-    console.log(response);
-                    //var object = JSON.parse(response);
-                    if(response.hasOwnProperty("error")){
-                        Templates.Modals.displayModal(createMessageModal("Error",response.error, "loginErrorModal"));
-                        return false;
-                    } else if (response.token) {
-                        window.localStorage.setItem('token', response.token);
-                        window.location = "home.html";
-                    } else {
-                        Templates.Modals.displayModal(createMessageModal("Error","Login was unsuccessful, please check your email and password", "loginFailModal"));
-                        return false;
-                    }
+                console.log(response);
+                //var object = JSON.parse(response);
+                if(response.hasOwnProperty("error")){
+                    Templates.Modals.displayModal(createMessageModal("Error",response.error, "loginErrorModal"));
+                    return false;
+                } else if (response.token) {
+                    window.localStorage.setItem('token', response.token);
+                    window.location = "home.html";
+                } else {
+                    Templates.Modals.displayModal(createMessageModal("Error","Login was unsuccessful, please check your email and password", "loginFailModal"));
+                    return false;
+                }
             }
         });
+    }
 }
 
 function sendRegisterForm(userType) {
