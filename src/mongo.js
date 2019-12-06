@@ -29,6 +29,10 @@ exports.insertOne = function (databaseName, collectionName, object) {
     return operate(databaseName, collectionName, collection => collection.insertOne(object)).then(result => result.ops);
 };
 
+exports.deleteOne = function (databaseName, collectionName, object) {
+    return operate(databaseName, collectionName, collection => collection.deleteOne(object)).then(result => result.ops);
+};
+
 exports.find = function (databaseName, collectionName, predicate) {
     return operate(databaseName, collectionName, collection => collection.find(predicate).toArray());
 };

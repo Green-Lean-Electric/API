@@ -288,9 +288,7 @@ function sendRegisterForm(userType) {
                 bufferSize: 10,
                 bufferFilling: 0,
                 productionRatioBuffer : 0.7,
-                productionRatioMarket : 0.3,
-                consumptionRatioBuffer : 0.8,
-                consumptionRatioMarket : 0.2
+                productionRatioMarket : 0.3
             };
             // call API
             $.ajax({
