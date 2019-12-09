@@ -288,7 +288,8 @@ function sendRegisterForm(userType) {
                 bufferSize: 10,
                 bufferFilling: 0,
                 productionRatioBuffer : 0.7,
-                productionRatioMarket : 0.3
+                productionRatioMarket : 0.3,
+                powerPlantStatus: 0 //0 stopped, 1 starting, 2 running
             };
             // call API
             $.ajax({
