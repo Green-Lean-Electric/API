@@ -282,38 +282,48 @@ function sendRegisterForm(userType) {
                 }
             });
         } else { //TODO
-            const data = {
-                email: email, 
-                password: pwd,
-                bufferSize: 10,
-                bufferFilling: 0,
-                productionRatioBuffer : 0.7,
-                productionRatioMarket : 0.3,
-                powerPlantStatus: 0 //0 stopped, 1 starting, 2 running
-            };
-            // call API
+            
             $.ajax({
-                type: 'POST',
-                url: '/managerSignUp',
+                method: 'POST',
+                url: `http://${getDomain()}:8080/getCurrentElectricityPrice`,
                 dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function(response){
-                    unblockView();
-                    if(response.hasOwnProperty("error")){
-                        Templates.Modals.displayModal(createMessageModal("Error",response.error, "signUpErrorModal"));
-                        return false;
-                    } else {
-                        Templates.Modals.displayModal(Templates.Modals.createModal(
-                            "Welcome !",
-                            "Well registered, now check your mailbox to activate your account!",
-                            "signUpSuccessModal",
-                            [
-                                ['Ok', () => location.assign('/')]
-                            ],
-                            () => location.assign('/')
-                        ));
-                    }
+                success: function (response) {
+
+                    const data = {
+                        email: email, 
+                        password: pwd,
+                        bufferSize: 79200, //1 journée de prod
+                        bufferFilling: 0,
+                        marketPrice: response.currentElectricityPrice,
+                        productionRatioBuffer : 0.7,
+                        productionRatioMarket : 0.3,
+                        powerPlantStatus: 0 //0 stopped, 1 starting, 2 running
+                    };
+                    // call API
+                    $.ajax({
+                        type: 'POST',
+                        url: '/managerSignUp',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(response){
+                            unblockView();
+                            if(response.hasOwnProperty("error")){
+                                Templates.Modals.displayModal(createMessageModal("Error",response.error, "signUpErrorModal"));
+                                return false;
+                            } else {
+                                Templates.Modals.displayModal(Templates.Modals.createModal(
+                                    "Welcome !",
+                                    "Well registered, now check your mailbox to activate your account!",
+                                    "signUpSuccessModal",
+                                    [
+                                        ['Ok', () => location.assign('/')]
+                                    ],
+                                    () => location.assign('/')
+                                ));
+                            }
+                        }
+                    });
                 }
             });
         }
