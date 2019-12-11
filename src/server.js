@@ -220,3 +220,10 @@ exports.sendEmail = function (from, to, subject, html) {
         console.dir(reply);
     });
 };
+
+exports.computeLinearFunction = function(startValue, endValue, maxSteps, currentStep) {
+    if (currentStep >= maxSteps) {
+        return endValue;
+    }
+    return startValue + (((endValue - startValue) / maxSteps) * currentStep);
+};
