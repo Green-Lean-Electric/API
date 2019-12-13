@@ -183,7 +183,7 @@ function sendLoginForm(userType) {
     var pw = document.loginform.password.value;
     var data = {
         email: email,
-        password: pw
+        password: hashPassword(pw)
     };
 
     if(userType === "prosumer") {
@@ -248,7 +248,7 @@ function sendRegisterForm(userType) {
         if(userType === "prosumer"){
             const data = {
                 email: email, 
-                password: pwd,
+                password: hashPassword(pwd),
                 bufferSize: 10,
                 bufferFilling: 0,
                 productionRatioBuffer : 0.7,
@@ -291,12 +291,13 @@ function sendRegisterForm(userType) {
 
                     const data = {
                         email: email, 
-                        password: pwd,
+                        password: hashPassword(pwd),
                         bufferSize: 79200, //1 journée de prod
                         bufferFilling: 0,
                         marketPrice: response.currentElectricityPrice,
                         productionRatioBuffer : 0.7,
                         productionRatioMarket : 0.3,
+                        powerPlantProduction: 0,
                         powerPlantStatus: 0 //0 stopped, 1 starting, 2 running
                     };
                     // call API
@@ -330,6 +331,17 @@ function sendRegisterForm(userType) {
     } else {
         Templates.Modals.displayModal(createMessageModal("Error","Registration was unsuccessful, please check your email and password. (Your password must have between 6 to 20 characters which contain at least one numeric digit, one uppercase and one lowercase letter !)", "signUpWrongDatasModal"));
     }
+}
+
+function hashPassword(pwd) {
+    var hash = 0;
+    if (pwd.length === 0) return hash;
+    for (i = 0; i < pwd.length; i++) {
+        char = pwd.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
 }
 
 function checkPassword(pwd) { 
