@@ -298,6 +298,7 @@ function sendRegisterForm(userType) {
                         productionRatioBuffer : 0.7,
                         productionRatioMarket : 0.3,
                         powerPlantProduction: 0,
+                        marketQuantityAvailable: 0,
                         powerPlantStatus: 0 //0 stopped, 1 starting, 2 running
                     };
                     // call API
