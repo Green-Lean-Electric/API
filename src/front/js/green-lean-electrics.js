@@ -249,7 +249,7 @@ function sendRegisterForm(userType) {
             const data = {
                 email: email, 
                 password: hashPassword(pwd),
-                bufferSize: 10,
+                bufferSize: 3000,
                 bufferFilling: 0,
                 productionRatioBuffer : 0.7,
                 productionRatioMarket : 0.3,
