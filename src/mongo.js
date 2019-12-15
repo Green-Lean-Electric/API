@@ -44,3 +44,9 @@ exports.count = function (databaseName, collectionName) {
 exports.updateOne = function (databaseName, collectionName, object, updateOperations) {
     return operate(databaseName, collectionName, collection => collection.updateOne(object, updateOperations).then(result => result.result.nModified));
 };
+
+exports.findLast = function(databaseName, collectionName, object, column) {
+    let predicate = {};
+    predicate[column] = -1;
+    return operate(databaseName, collectionName, collection => collection.find(object).sort(predicate).limit(1).toArray().then(results => results[0]));
+};
