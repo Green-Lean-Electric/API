@@ -285,21 +285,13 @@ function sendRegisterForm(userType) {
             
             $.ajax({
                 method: 'POST',
-                url: `http://${getDomain()}:8080/getCurrentElectricityPrice`,
+                url: `/prosumerSignUp`,
                 dataType: 'json',
                 success: function (response) {
-
                     const data = {
                         email: email, 
                         password: hashPassword(pwd),
-                        bufferSize: 79200, //1 journée de prod
-                        bufferFilling: 0,
                         marketPrice: response.currentElectricityPrice,
-                        productionRatioBuffer : 0.7,
-                        productionRatioMarket : 0.3,
-                        powerPlantProduction: 0,
-                        marketQuantityAvailable: 0,
-                        powerPlantStatus: 0 //0 stopped, 1 starting, 2 running
                     };
                     // call API
                     $.ajax({
