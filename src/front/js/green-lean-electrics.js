@@ -282,42 +282,34 @@ function sendRegisterForm(userType) {
                 }
             });
         } else { //TODO
-            
+
+            const data = {
+                email: email,
+                password: hashPassword(pwd)
+            };
+            // call API
             $.ajax({
-                method: 'POST',
-                url: `/prosumerSignUp`,
+                type: 'POST',
+                url: '/managerSignUp',
                 dataType: 'json',
-                success: function (response) {
-                    const data = {
-                        email: email, 
-                        password: hashPassword(pwd),
-                        marketPrice: response.currentElectricityPrice,
-                    };
-                    // call API
-                    $.ajax({
-                        type: 'POST',
-                        url: '/managerSignUp',
-                        dataType: 'json',
-                        contentType: 'application/json',
-                        data: JSON.stringify(data),
-                        success: function(response){
-                            unblockView();
-                            if(response.hasOwnProperty("error")){
-                                Templates.Modals.displayModal(createMessageModal("Error",response.error, "signUpErrorModal"));
-                                return false;
-                            } else {
-                                Templates.Modals.displayModal(Templates.Modals.createModal(
-                                    "Welcome !",
-                                    "Well registered, now check your mailbox to activate your account!",
-                                    "signUpSuccessModal",
-                                    [
-                                        ['Ok', () => location.assign('/')]
-                                    ],
-                                    () => location.assign('/')
-                                ));
-                            }
-                        }
-                    });
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response){
+                    unblockView();
+                    if(response.hasOwnProperty("error")){
+                        Templates.Modals.displayModal(createMessageModal("Error",response.error, "signUpErrorModal"));
+                        return false;
+                    } else {
+                        Templates.Modals.displayModal(Templates.Modals.createModal(
+                            "Welcome !",
+                            "Well registered, now check your mailbox to activate your account!",
+                            "signUpSuccessModal",
+                            [
+                                ['Ok', () => location.assign('/')]
+                            ],
+                            () => location.assign('/')
+                        ));
+                    }
                 }
             });
         }
