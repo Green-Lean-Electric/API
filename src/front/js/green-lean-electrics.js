@@ -248,13 +248,7 @@ function sendRegisterForm(userType) {
         if(userType === "prosumer"){
             const data = {
                 email: email, 
-                password: hashPassword(pwd),
-                bufferSize: 3000,
-                bufferFilling: 0,
-                productionRatioBuffer : 0.7,
-                productionRatioMarket : 0.3,
-                consumptionRatioBuffer : 0.8,
-                consumptionRatioMarket : 0.2
+                password: hashPassword(pwd)
             };
             // call API
             $.ajax({
