@@ -127,6 +127,7 @@ String.prototype.toHtmlElement = String.prototype.toHtmlElement ||
     };
 
 /** User feedback **/
+
 let blocks = 0;
 
 function blockView() {
@@ -148,8 +149,37 @@ function unblockView() {
     }
 }
 
+/** Charts **/
+
+Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+Chart.defaults.global.defaultFontColor = '#858796';
+
+const pieChartOptions = {
+    maintainAspectRatio: false,
+    tooltips: {
+        backgroundColor: "rgb(255,255,255)",
+        bodyFontColor: "#858796",
+        borderColor: '#dddfeb',
+        borderWidth: 1,
+        xPadding: 15,
+        yPadding: 15,
+        displayColors: false,
+        caretPadding: 10,
+    },
+    legend: {
+        display: false
+    },
+    cutoutPercentage: 80,
+};
+
 /** Utils **/
 
+function initModals(modalsCreationFunctions) {
+    for (const modalCreationFunction of modalsCreationFunctions) {
+        $('body').append(modalCreationFunction());
+    }
+}
+    
 function getDomain() {
     const host = location.host;
     const port = location.port;
@@ -174,142 +204,39 @@ function createMessageModal(title, message, id) {
     );
 }
 
-/** Form **/
-
-function sendLoginForm(userType) {
-    blockView();
-
-    var email = document.loginform.email.value;
-    var pw = document.loginform.password.value;
-    var data = {
-        email: email,
-        password: hashPassword(pw)
-    };
-
-    if(userType === "prosumer") {
-        // call API
-        $.ajax({
-            method: 'POST',
-            url: '/prosumerLogin',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function (response) {
-                unblockView();
-                console.log(response);
-                //var object = JSON.parse(response);
-                if (response.hasOwnProperty("error")) {
-                    Templates.Modals.displayModal(createMessageModal("Error", response.error, "loginErrorModal"));
-                    return false;
-                } else if (response.token) {
-                    window.localStorage.setItem('token', response.token);
-                    window.location = "home.html";
-                } else {
-                    Templates.Modals.displayModal(createMessageModal("Error", "Login was unsuccessful, please check your email and password", "loginFailModal"));
-                    return false;
-                }
-            }
-        })
-    }
-    else {
-        $.ajax({ //TODO
-            method: 'POST',
-            url: '/managerLogin',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function (response) {
-                unblockView();
-                console.log(response);
-                //var object = JSON.parse(response);
-                if(response.hasOwnProperty("error")){
-                    Templates.Modals.displayModal(createMessageModal("Error",response.error, "loginErrorModal"));
-                    return false;
-                } else if (response.token) {
-                    window.localStorage.setItem('token', response.token);
-                    window.location = "home.html";
-                } else {
-                    Templates.Modals.displayModal(createMessageModal("Error","Login was unsuccessful, please check your email and password", "loginFailModal"));
-                    return false;
-                }
-            }
-        });
-    }
+function createLoggedOutModal() {
+    return Templates.Modals.createModal(
+        'Log out',
+        'You are now logged out.',
+        'loggedOutModal',
+        [
+            ['Ok', () => location.assign('/')]
+        ],
+        () => location.assign('/')
+    );
 }
 
-function sendRegisterForm(userType) {
-    var email = document.registerform.email.value;
-    var pwd = document.registerform.password.value;
-    var repeatpwd = document.registerform.repeatpassword.value;
+function createUploadPictureModal() {
+    const body = `
+            <form method="post" enctype="multipart/form-data">
+                <div class="custom-file">
+                    <label class="custom-file-label" for="newPicture">Choose file</label>
+                    <input type="file" class="custom-file-input" id="newPicture">
+                </div>
+            </form>
+    `;
+    return Templates.Modals.createModal(
+        'Change your house picture',
+        body,
+        'editPictureModal',
+        [
+            ['Cancel', () => {}],
+            ['Validate', sendPicture]
+        ]);
+}
 
-    if(checkPassword(pwd) && pwd === repeatpwd){
-        blockView();
-
-        if(userType === "prosumer"){
-            const data = {
-                email: email, 
-                password: hashPassword(pwd)
-            };
-            // call API
-            $.ajax({
-                type: 'POST',
-                url: '/prosumerSignUp',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function(response){
-                    unblockView();
-                    if(response.hasOwnProperty("error")){
-                        Templates.Modals.displayModal(createMessageModal("Error",response.error, "signUpErrorModal"));
-                        return false;
-                    } else {
-                        Templates.Modals.displayModal(Templates.Modals.createModal(
-                            "Welcome !",
-                            "Well registered, now check your mailbox to activate your account!",
-                            "signUpSuccessModal",
-                            [
-                                ['Ok', () => location.assign('/')]
-                            ],
-                            () => location.assign('/')
-                        ));
-                    }
-                }
-            });
-        } else { //TODO
-
-            const data = {
-                email: email,
-                password: hashPassword(pwd)
-            };
-            // call API
-            $.ajax({
-                type: 'POST',
-                url: '/managerSignUp',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function(response){
-                    unblockView();
-                    if(response.hasOwnProperty("error")){
-                        Templates.Modals.displayModal(createMessageModal("Error",response.error, "signUpErrorModal"));
-                        return false;
-                    } else {
-                        Templates.Modals.displayModal(Templates.Modals.createModal(
-                            "Welcome !",
-                            "Well registered, now check your mailbox to activate your account!",
-                            "signUpSuccessModal",
-                            [
-                                ['Ok', () => location.assign('/')]
-                            ],
-                            () => location.assign('/')
-                        ));
-                    }
-                }
-            });
-        }
-    } else {
-        Templates.Modals.displayModal(createMessageModal("Error","Registration was unsuccessful, please check your email and password. (Your password must have between 6 to 20 characters which contain at least one numeric digit, one uppercase and one lowercase letter !)", "signUpWrongDatasModal"));
-    }
+function round(number, howmuch) {
+    return (Math.round(number * howmuch) / howmuch);
 }
 
 function hashPassword(pwd) {
@@ -332,25 +259,127 @@ function checkPassword(pwd) {
     }
 }
 
-function sendLogoutForm(userType) {
-    if(userType === "prosumer")
+/** Form **/
+
+function sendLoginForm() {
+    blockView();
+
+    var email = document.loginform.email.value;
+    var pw = document.loginform.password.value;
+    var data = {
+        email: email,
+        password: hashPassword(pw)
+    };
+
+    $.ajax({
+        method: 'POST',
+        url: '/login',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function (response) {
+            unblockView();
+            console.log(response);
+            if (response.hasOwnProperty("error")) {
+                Templates.Modals.displayModal(createMessageModal("Error", response.error, "loginErrorModal"));
+                return false;
+            } else if (response.token) {
+                window.localStorage.setItem('token', response.token);
+                window.location = "home.html";
+            } else {
+                Templates.Modals.displayModal(createMessageModal("Error", "Login was unsuccessful, please check your email and password", "loginFailModal"));
+                return false;
+            }
+        }
+    });
+}
+
+function sendRegisterForm(userType) {
+    var email = document.registerform.email.value;
+    var pwd = document.registerform.password.value;
+    var repeatpwd = document.registerform.repeatpassword.value;
+
+    if(checkPassword(pwd) && pwd === repeatpwd){
+        blockView();
+        const data = {
+            email: email, 
+            password: hashPassword(pwd)
+        };
+
         $.ajax({
-            type: 'GET',
-            url: '/prosumerLogout?token=' + window.localStorage.getItem('token'),
+            type: 'POST',
+            url: '/signUp',
             dataType: 'json',
             contentType: 'application/json',
-            success: function () {
-                Templates.Modals.displayModal($('#loggedOutModal'));
+            data: JSON.stringify(data),
+            success: function(response){
+                unblockView();
+                if(response.hasOwnProperty("error")){
+                    Templates.Modals.displayModal(createMessageModal("Error",response.error, "signUpErrorModal"));
+                    return false;
+                } else {
+                    Templates.Modals.displayModal(Templates.Modals.createModal(
+                        "Welcome !",
+                        "Well registered, now check your mailbox to activate your account!",
+                        "signUpSuccessModal",
+                        [
+                            ['Ok', () => location.assign('/')]
+                        ],
+                        () => location.assign('/')
+                    ));
+                }
             }
         });
-    else 
-        $.ajax({//TODO
-            type: 'GET',
-            url: '/managerLogout?token=' + window.localStorage.getItem('token'),
-            dataType: 'json',
-            contentType: 'application/json',
-            success: function () {
-                Templates.Modals.displayModal($('#loggedOutModal'));
-            }
-        });
+    } else {
+        Templates.Modals.displayModal(createMessageModal("Error","Registration was unsuccessful, please check your email and password. (Your password must have between 6 to 20 characters which contain at least one numeric digit, one uppercase and one lowercase letter !)", "signUpWrongDatasModal"));
+    }
+}
+
+function sendLogoutForm() {
+    $.ajax({
+        type: 'GET',
+        url: '/logout?token=' + window.localStorage.getItem('token'),
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function () {
+            Templates.Modals.displayModal($('#loggedOutModal'));
+        }
+    });
+}
+
+function retrieveProfilePicture() {
+    blockView();
+    const housePicture = $("#housePicture");
+    housePicture.on('error', function() {
+        $(this).hide();
+        unblockView();
+    });
+    housePicture.on('load', function() {
+        $(this).show();
+        unblockView();
+    });
+    housePicture.attr("src", `/retrievePicture?token=${window.localStorage.getItem('token')}&date=${new Date().getTime()}`);
+}
+
+function sendPicture() {
+    blockView();
+
+    const fd = new FormData();
+
+    const file = $('#newPicture')[0].files[0];
+    fd.append('file', file, file.name);
+    fd.append('token', window.localStorage.getItem('token'));
+
+    $.ajax({
+        url: '/uploadPicture',
+        method: 'POST',
+        data: fd,
+        processData: false,
+        contentType: false,
+        success: function () {
+            unblockView();
+            Templates.Modals.displayModal(Templates.Modals.createModal('Picture uploaded', 'Your picture has been uploaded!', 'uploadedPictureModal', [['Close', () => {}]]));
+            retrieveProfilePicture();
+        },
+    });
 }
