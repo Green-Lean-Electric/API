@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "formidable": "^1.2.1",
-    "mongodb": "^3.3.4"
+    "mongodb": "^3.3.4",
+    "sendmail": "^1.6.1"
   }
 }
